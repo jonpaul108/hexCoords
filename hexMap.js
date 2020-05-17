@@ -95,37 +95,116 @@ const hexagonMap = (sides) => {
     return gameMap;
   }
   
+  
+  
+  
+  
+  
+  // const dist1 = cubeDist(hexMap1[0][0], hexMap1[0][1]);
+  // const dist2 = cubeDist(hexMap1[2][1], hexMap1[0][0]);
+  // const dist3 = cubeDist(hexMap3[3][3], hexMap3[4][5]);
+  // console.log('dist1: ', dist1); // ==> 1
+  // console.log('dist2: ', dist2); // ==> 2
+  // console.log('dist3: ', dist3); // ==> 3
+  
+  const findPointsBetweenHex = (a, b) => {
+  
+    class Cube {
+      constructor(xF, yF, zF, xR, yR, zR) {
+        this.xF = xF;
+        this.yF = yF;
+        this.zF = zF;
+        this.xR = xR;
+        this.yR = yR;
+        this.zR = zR;
+      };
+    }
+  
+    class Points {
+      constructor(a, b, dist) {
+        this.points = [];
+        this.a = a;
+        this.b = b;
+        this.dist = 0;
+      }
+  
+    findPoints() {
+      let a = this.a;
+      let b = this.b;
+      const points = this.points;
+      let curQ, curR, curS;
+      this.dist = this.cubeDist(a, b);
+      const dist = this.dist;
+      for(let i = 0; i <= dist; i ++) {
+          let cube;
+          curQ = a.q + (b.q - a.q) * 1.0/dist * i; 
+          curS = a.s + (b.s - a.s) * 1.0/dist * i; 
+          curR = a.r + (b.r - a.r) * 1.0/dist * i; 
+          //round out the floating points, add them to cube
+          cube = this.cubeRound(new Cube(curQ, curS, curR));
+  
+          points.push(cube);
+          
+      }
+    }
+  
+    cubeRound(cube) {
+      let rx = Math.round(cube.xF);
+        let ry = Math.round(cube.yF);
+        let rz = Math.round(cube.zF);
+  
+        const xDiff = Math.abs(rx - cube.x);
+        const yDiff = Math.abs(ry - cube.y);
+        const zDiff = Math.abs(rz - cube.z);
+  
+        if (xDiff > yDiff && xDiff > zDiff){
+            rx = -ry-rz
+        }
+        else if (yDiff > zDiff) {
+            ry = -rx-rz
+        }
+        else {
+            rz = -rx-ry
+  
+        }
+        cube.xR = rx;
+        cube.yR = ry;
+        cube.zR = rz;
+  
+        return cube;
+    }
+  
+      cubeDist(aHex, bHex) {
+          return Math.max(Math.abs(aHex.q - bHex.q), Math.abs(aHex.s - bHex.s), Math.abs(aHex.r - bHex.r));
+      }
+  
+    }
+  
+    const points = new Points(a, b);
+    points.findPoints();
+    return points;
+  }
+  
   const hexMap1 = hexagonMap(1).map;
   const hexMap2 = hexagonMap(2).map;
   const hexMap3 = hexagonMap(3).map;
   // console.log('///////hexMap1///////: ', map);
   // console.log('///////hexMap2/////: ', map);
+  const points = findPointsBetweenHex(hexMap3[0][0], hexMap3[4][2]);
+  
+  console.log('FloatAndRoundPoints: ', points.points);
   
   
-  //finding the distance between hexagons based on cubed coords
-  //example func
-  // function cubeDistance(a, b){
-    //a and b are hexagons on the map
-    //I'm not using x y x, will be q s r
-    //I realize this is confusing. It's becasue the 'docs' are not consistant on this point. They were more consistantly q, r, s (*shrug)
-  //     return max(abs(a.x - b.x), abs(a.y - b.y), abs(a.z - b.z))
-  // }
-  
-  ////////Use this func for my hexes////////
-  function cubeDist(aHex, bHex) {
-    return Math.max(Math.abs(aHex.q - bHex.q), Math.abs(aHex.s - bHex.s), Math.abs(aHex.r - bHex.r));
-  }
   
   
-  //example: 
   
-  const dist1 = cubeDist(hexMap1[0][0], hexMap1[0][1]);
-  const dist2 = cubeDist(hexMap1[2][1], hexMap1[0][0]);
-  const dist3 = cubeDist(hexMap3[3][3], hexMap3[4][5]);
-  console.log('dist1: ', dist1); // ==> 1
-  console.log('dist2: ', dist2); // ==> 2
-  console.log('dist3: ', dist3); // ==> 3
   
+  
+  
+  
+  
+  
+  ///////////////////////////////////////
   //finding floating points between two distances:
   
   //p = how many points between
@@ -153,7 +232,7 @@ const hexagonMap = (sides) => {
   }
   
   //finds floating points and rounds them off, returns an array of all points (as hexagon cubed coords) between two hexes
-  const findPoints = (a, b, p) => {
+  const findPoints = (a, b) => {
       //A + (B - A) * 1.0/N * i
       const points = [];
       let curQ, curR, curS;
@@ -170,6 +249,7 @@ const hexagonMap = (sides) => {
       }
       return points;
   }
+  
   
   //use this to round off the points when finding flaoting points, to now which Hex we are in
   
@@ -200,6 +280,60 @@ const hexagonMap = (sides) => {
   }
   
   
-  console.log(hexMap3);
-  const points = findPoints(hexMap3[3][3], hexMap3[4][5], 3);
-  console.log(points);
+  //axial coordinate system
+  //Here we'll take in the array of hexs, and using their coords,
+  
+  
+  // const sides = 6;
+  // const hexCoords = new HexCoords(sides);
+  // hexCoords.makeCoords();
+  // const map = createMap(sides);
+  // const twoDArr = axialCoordsToMap(hexCoords.coords, map, sides);
+  
+  // console.log(twoDArr);
+  
+  
+  ////////////////individual functions/////////////
+  //createMap func
+  
+  //create empty arrays of n (number of hexagons per side) that is n * 2 + 1 rows
+  //don't need to add columns. We'll add columns using axial coordinates;
+  const createMap = (n) => {
+   // n = 2 * 2 + 1;
+   const arrMap = [];
+   n = (n * 2) + 1;
+   let i = 0;
+   while(i < n) {
+     arrMap.push([]);
+     i ++;
+   }
+    return arrMap;
+  }
+  
+  //make and attach axial coords to 2d map from cubed coords
+  const axialCoordsToMap = (cubedCoords, map, n) => {
+    let row, col, hex;
+    for (let i = 0; i < cubedCoords.length; i ++) {
+      hex = cubedCoords[i];
+      row = hex.r - (-n);
+      if (row <= n) {
+        col = hex.q + (n - (-hex.r));
+      }
+      else { 
+        col = hex.q + (n - (-hex.r)) - (row - n);
+      }
+      hex.row = row;
+      hex.col = col;
+      map[row][col] = hex;
+    }
+    return map;
+  }
+  
+  
+  
+  ////////Use this func for my hexes////////
+  function cubeDist(aHex, bHex) {
+    return Math.max(Math.abs(aHex.q - bHex.q), Math.abs(aHex.s - bHex.s), Math.abs(aHex.r - bHex.r));
+  }
+  
+  
