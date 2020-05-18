@@ -153,9 +153,9 @@ const hexagonMap = (sides) => {
         let ry = Math.round(cube.yF);
         let rz = Math.round(cube.zF);
   
-        const xDiff = Math.abs(rx - cube.x);
-        const yDiff = Math.abs(ry - cube.y);
-        const zDiff = Math.abs(rz - cube.z);
+        const xDiff = Math.abs(rx - cube.xF);
+        const yDiff = Math.abs(ry - cube.yF);
+        const zDiff = Math.abs(rz - cube.zF);
   
         if (xDiff > yDiff && xDiff > zDiff){
             rx = -ry-rz
@@ -190,9 +190,19 @@ const hexagonMap = (sides) => {
   const hexMap3 = hexagonMap(3).map;
   // console.log('///////hexMap1///////: ', map);
   // console.log('///////hexMap2/////: ', map);
+  console.log(hexMap2);
   const points = findPointsBetweenHex(hexMap3[0][0], hexMap3[4][2]);
   
   console.log('FloatAndRoundPoints: ', points.points);
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   
   
@@ -263,13 +273,13 @@ const hexagonMap = (sides) => {
       const zDiff = Math.abs(rz - cube.z);
   
       if (xDiff > yDiff && xDiff > zDiff){
-          rx = -ry-rz
+          rx = -ry - rz;
       }
       else if (yDiff > zDiff) {
-          ry = -rx-rz
+          ry = -rx - rz;
       }
       else {
-          rz = -rx-ry
+          rz = -rx - ry;
   
       }
       cube.x = rx;
@@ -335,5 +345,71 @@ const hexagonMap = (sides) => {
   function cubeDist(aHex, bHex) {
     return Math.max(Math.abs(aHex.q - bHex.q), Math.abs(aHex.s - bHex.s), Math.abs(aHex.r - bHex.r));
   }
+  
+  
+  
+  //////find ranges/////////
+  //using the same idea, that all of points together equal 0:
+  //1
+  // var results = []
+  // for each -N ≤ x ≤ +N:
+  //     for each max(-N, -x-N) ≤ y ≤ min(+N, -x+N):
+  //         var z = -x-y
+  //         results.append(cube_add(center, Cube(x, y, z)))
+  
+  //-1 <= q <= n
+    //Max(-1, -q * -1) <= s <= min(1, -q + 1);
+      //var z= -x-y
+    const hexMap = hexMap2;
+  
+    //it works! need to check for inbounds, but other than tht good to go!
+  const findRange = (hex, range, n) => {
+    let count = 0;
+  
+    /*keeps function in bounds
+    by making sure that the max and min are never less than or greater than the sides. this way, don't have to add in check logic for bounds
+    */
+    
+    const maxY = Math.min(n, hex.s + range);
+    const minY = Math.max(-n, hex.s - range);
+    const maxX = Math.min(n, hex.q + range);
+    const minX = Math.max(-n, hex.q - range);
+    const res = [];
+  
+    let row, col, cubes;
+  
+    for (let x = minX; x <= maxX; x ++) {
+      //when I know n, will write conidition for not continuing loop if outside of bounds
+       /*if ((Math.abs(x) + range <= (n + 1)) ) {
+         continue;
+       }*/
+  
+      for (let y = minY; y <= maxY; y++) {
+        //add y check for n: if (Math.abs(y) + range <= n )
+        if ((x === hex.q && y === hex.s) /*|| (Math.abs(y) + range <= (n + 1))*/ ) {
+          continue;
+        }
+      
+        let z = -(x + y);
+        if (Math.abs(z) <= range) {
+          row = z - (-range);
+          if (row <= range) {
+             col = x + (range - (-z));
+          } else {
+             col = x + (range - (-z)) - (row - range);
+          }
+          cubes = {x, y, z}
+          count ++;
+          res.push({count, row, col, cubes});
+        }
+      }
+    }
+    return res;
+  }
+  
+  console.log('find range: ', findRange(hexMap3[3][0], 1, 3)); // ==> 3 rows
+  console.log('find range: ', findRange(hexMap2[2][2], 2, 2)); // => 18 rows 
+   
+      
   
   
